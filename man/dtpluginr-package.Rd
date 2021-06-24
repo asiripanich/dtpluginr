@@ -8,6 +8,15 @@
 \description{
 What the package does (one paragraph).
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/asiripanich/dtpluginr}
+  \item \url{https://asiripanich.github.io/dtpluginr/}
+  \item Report bugs at \url{https://github.com/asiripanich/dtpluginr/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
 

@@ -9,6 +9,8 @@ Authors@R:
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
+URL: https://github.com/asiripanich/dtpluginr, https://asiripanich.github.io/dtpluginr/
+BugReports: https://github.com/asiripanich/dtpluginr/issues
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
