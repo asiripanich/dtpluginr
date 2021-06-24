@@ -33,6 +33,11 @@ devtools::install_github("asiripanich/dtpluginr")
 
 See the `examples` folder for examples.
 
+## To do
+
+- [ ] Register dev key as an Renvironment variable. 
+- [ ] Test the examples.
+
 ## Interest in the DigiTwin project, who should I talk to?
 
 If you have any questions or suggestions, please contact:
