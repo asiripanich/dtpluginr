@@ -25,8 +25,8 @@
 #' @return debug print string started with "==="
 #' @export
 #' @examples
-#' utils.debugprint("all done")
-utils.debugprint <- function(arg1){
+#' dt_debugprint("all done")
+dt_debugprint <- function(arg1){
   
   print(sprintf("=== %s",arg1 ))
   
@@ -39,7 +39,7 @@ utils.debugprint <- function(arg1){
 #'
 #' @return A sp object
 #' @export
-utils.loadGeoJSON2SP <- function(url){
+dt_loadGeoJSON2SP <- function(url){
     
   # create a unique temp file name for geojson
   tmpFilePath = sprintf("%s\\%s.geojson", globalGSCredentials$tempDirPath, UUIDgenerate(FALSE))
@@ -49,7 +49,7 @@ utils.loadGeoJSON2SP <- function(url){
     
     dir.create(globalGSCredentials$tempDirPath, showWarnings=FALSE, recursive=TRUE)
     
-    utils.debugprint(sprintf("%s created",globalGSCredentials$tempDirPath))
+    dt_debugprint(sprintf("%s created",globalGSCredentials$tempDirPath))
   }
   
   spobj <- tryCatch(
@@ -86,7 +86,7 @@ utils.loadGeoJSON2SP <- function(url){
 #'
 #' @return A sp object
 #' @export
-utils.loadGeoJSON2SPWithAuth <- function(url, username, password){
+dt_loadGeoJSON2SPWithAuth <- function(url, username, password){
   
   # create a unique temp file name for geojson
   tmpFilePath = sprintf("%s\\%s.geojson", globalGSCredentials$tempDirPath, UUIDgenerate(FALSE))
@@ -96,7 +96,7 @@ utils.loadGeoJSON2SPWithAuth <- function(url, username, password){
     
     dir.create(globalGSCredentials$tempDirPath, showWarnings=FALSE, recursive=TRUE)
     
-    utils.debugprint(sprintf("%s created",globalGSCredentials$tempDirPath))
+    dt_debugprint(sprintf("%s created",globalGSCredentials$tempDirPath))
   }
   
   spobj <- tryCatch(
@@ -133,7 +133,7 @@ utils.loadGeoJSON2SPWithAuth <- function(url, username, password){
 #'
 #' @return A data.frame object
 #' @export
-utils.loadGeoJSON2DF <- function(url){
+dt_loadGeoJSON2DF <- function(url){
   
   dfobj <- tryCatch(
     {
@@ -168,7 +168,7 @@ utils.loadGeoJSON2DF <- function(url){
 #' 
 #' @return A data.frame object
 #' @export
-utils.loadGeoJSON2DFWithAuth <- function(url, username, password){
+dt_loadGeoJSON2DFWithAuth <- function(url, username, password){
   
   dfobj <- tryCatch(
     {
@@ -201,7 +201,7 @@ utils.loadGeoJSON2DFWithAuth <- function(url, username, password){
 #' @param layerprefix a prefix for layer name, will make the generated data layers in GeoServer more identifiable 
 #' @return A wfs url string of successfully published data layer
 #' @export
-utils.publishSP2GeoServer <- function(spobj, layerprefix="my_"){
+dt_publishSP2GeoServer <- function(spobj, layerprefix="my_"){
   
   procflag = TRUE
   publishedWfsUrl = NULL #if error occurs, return publishedWfsUrl as NULL
@@ -223,14 +223,14 @@ utils.publishSP2GeoServer <- function(spobj, layerprefix="my_"){
   zip(zipfile = tmpFilePath, files = dir(tmpFilePath, full.names = TRUE), flags="-j")  
 
   # upload zip for geoserver
-  out = utils.addShp2DataStore(sprintf("%s.zip", tmpFilePath))
+  out = dt_addShp2DataStore(sprintf("%s.zip", tmpFilePath))
   if(nchar(out)>0){
     procflag = FALSE
   }
   
   if(procflag){
     # publish it as new featuretype
-    out = utils.createFeatureType(tmpFileName)
+    out = dt_createFeatureType(tmpFileName)
     #if(nchar(out)>0){
       # it rarely happens (current testing indicates when a new ws and new ds is created at the same time, server might raise a 500 error), it seems that the layer is still published as usual. need more investigation, just skip seeting procflag = FALSE for now
       #procflag = FALSE 
@@ -277,7 +277,7 @@ utils.publishSP2GeoServer <- function(spobj, layerprefix="my_"){
 #
 #' @return a list contains single element to be included in geolayers
 #' @export
-utils.publishSP2GeoServerWithStyle <- function(spobj, 
+dt_publishSP2GeoServerWithStyle <- function(spobj, 
                                                layerprefix="my_",
                                                styleprefix="my_stl_",
                                                attrname, 
@@ -335,13 +335,13 @@ utils.publishSP2GeoServerWithStyle <- function(spobj,
   
   
   # publish sp to geoserver
-  outputWfsUrl = utils.publishSP2GeoServer(spobj, layerprefix)
+  outputWfsUrl = dt_publishSP2GeoServer(spobj, layerprefix)
   if(is.null(outputWfsUrl)){
     return(NULL)
   }
   
   # calculte wms style 
-  wmsStyleResult = fromJSON(utils.createWMSStyle(wfsurl=outputWfsUrl,
+  wmsStyleResult = fromJSON(dt_createWMSStyle(wfsurl=outputWfsUrl,
                                                  styleprefix=styleprefix,
                                                  attrname=attrname,
                                                  palettename=palettename,
@@ -362,9 +362,9 @@ utils.publishSP2GeoServerWithStyle <- function(spobj,
   # create content of the 1st element
   
   geolayers_element = list(
-      layername=utils.getLayerNameFromWFSUrl(wfsurl=outputWfsUrl),
+      layername=dt_getLayerNameFromWFSUrl(wfsurl=outputWfsUrl),
 	  layerdisplayname=layerdisplyname,
-      bbox=utils.getBbox(spobj),
+      bbox=dt_getBbox(spobj),
       wfs=list(url=outputWfsUrl, styleparams=list()),
       wms=list(url=globalGSCredentials["wmsUrlTemplate"][[1]], styleparams= wmsStyleparams)
     )
@@ -398,7 +398,7 @@ utils.publishSP2GeoServerWithStyle <- function(spobj,
 #
 #' @return a list elements to be included in geolayers
 #' @export
-utils.publishSP2GeoServerWithMultiStyles <- function(spobj, 
+dt_publishSP2GeoServerWithMultiStyles <- function(spobj, 
                                                     layerprefix="my_",
                                                     styleprefix="my_stl_",
                                                     attrname_vec=c(""), 
@@ -414,7 +414,7 @@ utils.publishSP2GeoServerWithMultiStyles <- function(spobj,
   {
   # check data
   if(length(attrname_vec)==0){
-    utils.debugprint("length of attrname_vec should not be 0")
+    dt_debugprint("length of attrname_vec should not be 0")
     return(NULL)
   }
   # get the number of styles
@@ -522,9 +522,9 @@ utils.publishSP2GeoServerWithMultiStyles <- function(spobj,
   
   
   # publish sp to geoserver
-  outputWfsUrl = utils.publishSP2GeoServer(spobj, layerprefix)
+  outputWfsUrl = dt_publishSP2GeoServer(spobj, layerprefix)
   if(is.null(outputWfsUrl)){
-    utils.debugprint("error occurs in utils.publishSP2GeoServer method, try it again")
+    dt_debugprint("error occurs in dt_publishSP2GeoServer method, try it again")
     return(NULL)
   }
   
@@ -544,7 +544,7 @@ utils.publishSP2GeoServerWithMultiStyles <- function(spobj,
     styletype=styletype_vec[i]
     
     # calculte wms style 
-    wmsStyleResult = fromJSON(utils.createWMSStyle(wfsurl=outputWfsUrl,
+    wmsStyleResult = fromJSON(dt_createWMSStyle(wfsurl=outputWfsUrl,
                                                    styleprefix=styleprefix,
                                                    attrname=attrname,
                                                    palettename=palettename,
@@ -564,9 +564,9 @@ utils.publishSP2GeoServerWithMultiStyles <- function(spobj,
     
     
     geolayers_element = list(
-      layername=utils.getLayerNameFromWFSUrl(wfsurl=outputWfsUrl),
+      layername=dt_getLayerNameFromWFSUrl(wfsurl=outputWfsUrl),
 	  layerdisplayname=layerdisplyname_vec[i],
-      bbox=utils.getBbox(spobj),
+      bbox=dt_getBbox(spobj),
       wfs=list(url=outputWfsUrl, styleparams=list()),
       wms=list(url=globalGSCredentials["wmsUrlTemplate"][[1]], styleparams= wmsStyleparams)
     )
@@ -590,7 +590,7 @@ utils.publishSP2GeoServerWithMultiStyles <- function(spobj,
 #
 #' @return a list contains single element to be included in geolayers
 #' @export
-utils.publishSP2GeoServerWithName <- function(spobj, 
+dt_publishSP2GeoServerWithName <- function(spobj, 
                                                layerprefix="my_stl_",
                                                layerdisplyname=""
                                                )
@@ -602,7 +602,7 @@ utils.publishSP2GeoServerWithName <- function(spobj,
   spobj = spTransform(spobj,CRS(proj4string_epsg4326))
   
   # publish sp to geoserver
-  outputWfsUrl = utils.publishSP2GeoServer(spobj, layerprefix)
+  outputWfsUrl = dt_publishSP2GeoServer(spobj, layerprefix)
   if(is.null(outputWfsUrl)){
     return(NULL)
   }
@@ -610,9 +610,9 @@ utils.publishSP2GeoServerWithName <- function(spobj,
   # create content of the 1st element
   
   geolayers_element = list(
-    layername=utils.getLayerNameFromWFSUrl(wfsurl=outputWfsUrl),
+    layername=dt_getLayerNameFromWFSUrl(wfsurl=outputWfsUrl),
     layerdisplayname=layerdisplyname,
-    bbox=utils.getBbox(spobj),
+    bbox=dt_getBbox(spobj),
     wfs=list(url=outputWfsUrl, styleparams=list()),
     wms=list(url=globalGSCredentials["wmsUrlTemplate"][[1]])
   )
@@ -629,9 +629,9 @@ utils.publishSP2GeoServerWithName <- function(spobj,
 #'
 #' @return empty string if success or error message
 #' @export
-utils.createFeatureType <- function(filename){
+dt_createFeatureType <- function(filename){
  
-  ftContentRaw = utils.getFeatureType()
+  ftContentRaw = dt_getFeatureType()
   
   if(is.null(ftContentRaw)) return("fail to load FeatureType")
   
@@ -641,12 +641,12 @@ utils.createFeatureType <- function(filename){
   
   isExisting = (length(getNodeSet(ftContentXML, sprintf("/featureTypes/featureType[name='%s']",filename))) > 0)
   
-  #utils.debugprint(sprintf("new FeatureType: %s",filename))
-  #utils.debugprint(sprintf("current FeatureTypeContent: %s",ftContentRaw))
+  #dt_debugprint(sprintf("new FeatureType: %s",filename))
+  #dt_debugprint(sprintf("current FeatureTypeContent: %s",ftContentRaw))
   
   # if workspace already exists, do nothing 
   if(isExisting){
-    utils.debugprint(sprintf("FeatureType: %s already exists, skip creation",filename))
+    dt_debugprint(sprintf("FeatureType: %s already exists, skip creation",filename))
     return("")
   }
   
@@ -664,14 +664,14 @@ utils.createFeatureType <- function(filename){
   con = POST(url,timeout(36000), authenticate(globalGSCredentials$gsRESTUSER, globalGSCredentials$gsRESTPW), accept("application/xml"), content_type("application/xml"), body = body)
   
   if(con$status_code!=201){
-    utils.debugprint(sprintf("fail to create featuretype: %s",filename))
-    utils.debugprint(sprintf("response code: %i",con$status_code))
-    utils.debugprint(sprintf("response content: %s",content(con,"text")))
+    dt_debugprint(sprintf("fail to create featuretype: %s",filename))
+    dt_debugprint(sprintf("response code: %i",con$status_code))
+    dt_debugprint(sprintf("response content: %s",content(con,"text")))
     
     return("")
   }
   
-  utils.debugprint(sprintf("featuretype: %s created",filename))
+  dt_debugprint(sprintf("featuretype: %s created",filename))
   return("")
 }
 
@@ -679,7 +679,7 @@ utils.createFeatureType <- function(filename){
 #'
 #' @return xml string if success or empty string
 #' @export
-utils.getFeatureType <- function(){
+dt_getFeatureType <- function(){
   
   url <- sprintf('%s/rest/workspaces/%s/datastores/%s/featuretypes.xml'
                  ,globalGSCredentials$gsRESTURL
@@ -701,9 +701,9 @@ utils.getFeatureType <- function(){
 #'
 #' @return empty string if success or error message
 #' @export
-utils.createWorkspace <- function(wsname){
+dt_createWorkspace <- function(wsname){
   
-  wsContentRaw = utils.getWorkspace()
+  wsContentRaw = dt_getWorkspace()
   
   if(is.null(wsContentRaw)) return("fail to load workspaces")
   
@@ -715,7 +715,7 @@ utils.createWorkspace <- function(wsname){
 
   # if workspace already exists, do nothing 
   if(isExisting){
-    utils.debugprint(sprintf("workspace: %s already exists, skip creation",wsname))
+    dt_debugprint(sprintf("workspace: %s already exists, skip creation",wsname))
     return()
   }
   
@@ -727,11 +727,11 @@ utils.createWorkspace <- function(wsname){
   con = POST(url,timeout(36000), authenticate(globalGSCredentials$gsRESTUSER, globalGSCredentials$gsRESTPW), accept("application/xml"), content_type("application/xml"), body = body)
   
   if(con$status_code!=201){
-    utils.debugprint(sprintf("fail to create workspace: %s",wsname))
+    dt_debugprint(sprintf("fail to create workspace: %s",wsname))
     return()
   }
   
-  utils.debugprint(sprintf("workspace: %s created",wsname))
+  dt_debugprint(sprintf("workspace: %s created",wsname))
   return()
   
 }
@@ -741,7 +741,7 @@ utils.createWorkspace <- function(wsname){
 #'
 #' @return empty string if success or error message
 #' @export
-utils.getWorkspace <- function(){
+dt_getWorkspace <- function(){
   
   url <- sprintf('%s/rest/workspaces' ,globalGSCredentials$gsRESTURL)
   
@@ -759,10 +759,10 @@ utils.getWorkspace <- function(){
 #'
 #' @return empty string if success or error message
 #' @export
-utils.addShp2DataStore <- function(filepath){
+dt_addShp2DataStore <- function(filepath){
   
   #create workspace if it doesn't exist
-  utils.createWorkspace(globalGSCredentials$gsWORKSPACENAME)
+  dt_createWorkspace(globalGSCredentials$gsWORKSPACENAME)
 
   url <- sprintf('%s/rest/workspaces/%s/datastores/%s/file.shp'
                  ,globalGSCredentials$gsRESTURL
@@ -773,11 +773,11 @@ utils.addShp2DataStore <- function(filepath){
   con = PUT(url,timeout(36000), authenticate(globalGSCredentials$gsRESTUSER, globalGSCredentials$gsRESTPW), accept("*/*"), content_type("application/zip"), body = upload_file(filepath))
   
   if(con$status_code!=201){
-    utils.debugprint(sprintf("fail to upload shpfile: %s",filepath))
+    dt_debugprint(sprintf("fail to upload shpfile: %s",filepath))
     return("")
   }
   
-  utils.debugprint(sprintf("shpfile: %s uploaded",filepath))
+  dt_debugprint(sprintf("shpfile: %s uploaded",filepath))
   return("")
   
 }
@@ -807,7 +807,7 @@ utils.addShp2DataStore <- function(filepath){
 #' 
 #' @return
 #' @export
-utils.createWMSStyle <- function(wfsurl, styleprefix="my_stl_", attrname, palettename="Reds", colorreverseorder=FALSE, colornum=5, classifier="Jenks", bordercolor="black", borderwidth=1, bordervisible=TRUE, styletype="single"){
+dt_createWMSStyle <- function(wfsurl, styleprefix="my_stl_", attrname, palettename="Reds", colorreverseorder=FALSE, colornum=5, classifier="Jenks", bordercolor="black", borderwidth=1, bordervisible=TRUE, styletype="single"){
   
   wfsurl = sprintf("%s%s%s", wfsurl, "&propertyName=", attrname)
   
@@ -842,7 +842,7 @@ utils.createWMSStyle <- function(wfsurl, styleprefix="my_stl_", attrname, palett
 #'
 #' @return UTM zone code
 #' @export
-utils.long2UTM <- function(long){
+dt_long2UTM <- function(long){
 
  (floor((long + 180)/6) %% 60) + 1
 
@@ -855,7 +855,7 @@ utils.long2UTM <- function(long){
 #'
 #' @return list
 #' @export
-utils.df2jsonlist <- function(df){
+dt_df2jsonlist <- function(df){
   
   result = list()
   for (i in 1:nrow(df)){
@@ -880,7 +880,7 @@ utils.df2jsonlist <- function(df){
 #'
 #' @return 
 #' @export
-utils.getLayerNameFromWFSUrl <-function(wfsurl){
+dt_getLayerNameFromWFSUrl <-function(wfsurl){
   
   result = ""
   components <- strsplit(wfsurl, "&")[[1]]
@@ -904,7 +904,7 @@ utils.getLayerNameFromWFSUrl <-function(wfsurl){
 #'
 #' @return list(minX, minY, maxX, maxY)
 #' @export
-utils.getBbox <-function (spobj){
+dt_getBbox <-function (spobj){
   return(list(spobj@bbox[1,1],spobj@bbox[2,1],spobj@bbox[1,2],spobj@bbox[2,2]))
   }
 
@@ -915,17 +915,17 @@ utils.getBbox <-function (spobj){
 #'
 #' @return a reprojected sp object
 #' @export
-utils.project2UTM <-function (spobj){
+dt_project2UTM <-function (spobj){
   
   # get bbox of sp
-  bbox = utils.getBbox(spobj)
+  bbox = dt_getBbox(spobj)
   
   # find the centre x and y
   centreX = (bbox[[1]]+bbox[[3]]) / 2.0
   centreY = (bbox[[2]]+bbox[[4]]) / 2.0
   
   # determie the utm zone number by centre y
-  utmzone = utils.long2UTM(centreX)
+  utmzone = dt_long2UTM(centreX)
   
   # construct a valid proj4string_utm
   proj4string_utm = ""
@@ -946,7 +946,7 @@ utils.project2UTM <-function (spobj){
 #'
 #' @return a reprojected sp object
 #' @export
-utils.project2WGS84 <-function (spobj){
+dt_project2WGS84 <-function (spobj){
   
   return(spTransform(spobj,CRS(proj4string_epsg4326)))
 }
@@ -958,7 +958,7 @@ utils.project2WGS84 <-function (spobj){
 #'
 #' @return geomtype, one of Polygon, LineString, Point
 #' @export
-utils.getGeomType <-function (spobj){
+dt_getGeomType <-function (spobj){
   
   spobjClass = tolower(class(spobj)[1])
   
@@ -977,11 +977,11 @@ utils.getGeomType <-function (spobj){
 #'
 #' @return
 #' @export
-utils.initGeoServerCredentials <- function(dk){
+dt_initGeoServerCredentials <- function(dk){
   
   # assign dk to devkey
   devkey <<- dk
-  
+
   # get raw JSON string
   url = sprintf("%s%s", credUrl ,devkey)
   con = GET(url,timeout(36000))
@@ -1027,24 +1027,24 @@ utils.initGeoServerCredentials <- function(dk){
 #'
 #' @return
 #' @export
-utils.updateJob <- function(joboutputs, jobsuccess, jobuuid){
+dt_updateJob <- function(joboutputs, jobsuccess, jobuuid){
   
   if(tolower(trimws(jobuuid)=="fake-job-uuid")){
-    utils.debugprint("fake-job-uuid provided for testing. updateJob call skipped.")
+    dt_debugprint("fake-job-uuid provided for testing. updateJob call skipped.")
     
   }else{
     
     url <- jobUpdateUrl
     body <- toJSON(list(joboutputs=joboutputs, jobsuccess=jobsuccess, jobuuid=jobuuid, devkey=devkey),auto_unbox = TRUE)
-    utils.debugprint(body)
+    dt_debugprint(body)
     con = POST(url, timeout(36000), body=body, encode="raw")
     content(con, "text")
     
       
     if(con$status_code!=200){
-      utils.debugprint(sprintf("fail to update job: %s, errmsg: %s",jobuuid, content(con, "text") ))
+      dt_debugprint(sprintf("fail to update job: %s, errmsg: %s",jobuuid, content(con, "text") ))
     }else{
-      utils.debugprint(sprintf("job: %s updated",jobuuid))
+      dt_debugprint(sprintf("job: %s updated",jobuuid))
     }
   }
   
@@ -1060,7 +1060,7 @@ utils.updateJob <- function(joboutputs, jobsuccess, jobuuid){
 #'
 #' @return if success, a published datalayername; otherwise, empty string
 #' @export
-utils.publishTiffDataLayer <- function(filepath, datalayername=UUIDgenerate(FALSE)){
+dt_publishTiffDataLayer <- function(filepath, datalayername=UUIDgenerate(FALSE)){
   
   file = file(filepath, "rb")
   on.exit(close(file))
@@ -1077,7 +1077,7 @@ utils.publishTiffDataLayer <- function(filepath, datalayername=UUIDgenerate(FALS
   con = PUT(url,timeout(36000), authenticate(globalGSCredentials$gsRESTUSER, globalGSCredentials$gsRESTPW), accept("*/*"), content_type("geotif/geotiff"), body = upload_file(filepath))
   
   if(con$status_code!=201){
-    utils.debugprint(sprintf("fail to upload tiff file: %s",filepath))
+    dt_debugprint(sprintf("fail to upload tiff file: %s",filepath))
     return("")
   } 
   
@@ -1093,7 +1093,7 @@ utils.publishTiffDataLayer <- function(filepath, datalayername=UUIDgenerate(FALS
 #' @param isglobalstyle if TRUE, workspace information will not be attached. set this to TRUE if the style is hard coded in Geoserver. This is useful for creating common styles (such as shadow intensity, rainfall and temperature) at the application/built-in model level, rather than individual job level
 #' @return if success, a published datalayername; otherwise, empty string
 #' @export
-utils.addDefaultStyleToDataLayer <- function(stylename, datalayername, isglobalstyle=FALSE){
+dt_addDefaultStyleToDataLayer <- function(stylename, datalayername, isglobalstyle=FALSE){
   
   # ref https://boundlessgeo.com/2012/10/adding-layers-to-geoserver-using-the-rest-api/
   # ref https://gis.stackexchange.com/questions/94313/how-to-set-default-style-of-layer-using-rest-api-in-geoserver
@@ -1121,7 +1121,7 @@ utils.addDefaultStyleToDataLayer <- function(stylename, datalayername, isglobals
   con = PUT(url,timeout(36000), authenticate(globalGSCredentials$gsRESTUSER, globalGSCredentials$gsRESTPW), accept("*/*"), content_type("application/xml"), body = defaultStyle )
   
   if(con$status_code!=200){
-    utils.debugprint(sprintf("fail to add style %s to datalayer: %s", stylename, datalayername))
+    dt_debugprint(sprintf("fail to add style %s to datalayer: %s", stylename, datalayername))
     return("")
   } 
   
@@ -1134,7 +1134,7 @@ utils.addDefaultStyleToDataLayer <- function(stylename, datalayername, isglobals
 #'
 #' @return if success tiff store name; otherwise empty string
 #' @export
-utils.deleteTiffDataStore <- function(){
+dt_deleteTiffDataStore <- function(){
   
   url <- sprintf('%s/rest/workspaces/%s/coveragestores/%s_tiff?recurse=true'
                  ,globalGSCredentials$gsRESTURL
@@ -1145,7 +1145,7 @@ utils.deleteTiffDataStore <- function(){
   con = DELETE(url,timeout(36000), authenticate(globalGSCredentials$gsRESTUSER, globalGSCredentials$gsRESTPW), accept("*/*"))
   
   if(con$status_code!=200){
-    utils.debugprint(sprintf("fail to delete tiff store: %s_tiff", globalGSCredentials$gsDATASTORESNAME))
+    dt_debugprint(sprintf("fail to delete tiff store: %s_tiff", globalGSCredentials$gsDATASTORESNAME))
     return("")
   } 
   
@@ -1157,7 +1157,7 @@ utils.deleteTiffDataStore <- function(){
 #'
 #' @return if success, return the deleted datalayername; otherwise, empty string
 #' @export
-utils.deleteTiffDataLayer <- function(datalayername){
+dt_deleteTiffDataLayer <- function(datalayername){
   
   
   url <- sprintf('%s/rest/workspaces/%s/coveragestores/%s_tiff/coverages/%s?recurse=true'
@@ -1170,7 +1170,7 @@ utils.deleteTiffDataLayer <- function(datalayername){
   con = DELETE(url,timeout(36000), authenticate(globalGSCredentials$gsRESTUSER, globalGSCredentials$gsRESTPW), accept("*/*"))
   
   if(con$status_code!=200){
-    utils.debugprint(sprintf("fail to delete tiff layer: %s_tiff", datalayername))
+    dt_debugprint(sprintf("fail to delete tiff layer: %s_tiff", datalayername))
     return("")
   } 
   
