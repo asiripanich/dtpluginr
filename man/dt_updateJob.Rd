@@ -7,8 +7,6 @@
 dt_updateJob(joboutputs, jobsuccess, jobuuid)
 }
 \arguments{
-\item{joboutputs}{}
-
 \item{jobsuccess}{true or false}
 
 \item{jobuuid}{}

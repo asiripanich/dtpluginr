@@ -7,8 +7,6 @@
 dt_publishTiffDataLayer(filepath, datalayername = UUIDgenerate(FALSE))
 }
 \arguments{
-\item{filepath}{}
-
 \item{datalayername}{}
 }
 \value{
