@@ -4,7 +4,7 @@
 # Author: SDI 2019 Group 7
 # Modified by: Yuke Xie
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+library(dtpluginr)
 library(maptools)
 library(rgeos)
 library(rgdal)
@@ -42,7 +42,7 @@ setwd(LocationOfThisScript())
 
 myDevKey = "" # DO NOT CHANGE THIS VARIABLE NAME
 
-source("utils.R")
+
 
 execIndicator <- function(jobuuid,pop_wfs){
   

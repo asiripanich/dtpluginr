@@ -4,7 +4,7 @@
 #Author: SDI 2019 Group 8
 #Modified by: Yuke Xie
 ####################################################################################
-
+library(dtpluginr)
 library(maptools)
 library(rgdal)
 library(rgeos)
@@ -44,7 +44,7 @@ setwd(LocationOfThisScript())
 
 myDevKey = "" # DO NOT CHANGE THIS VARIABLE NAME
 
-source("utils.R")
+
 
 
 

@@ -44,6 +44,7 @@
 # (1) init commitment 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+library(dtpluginr)
 library(maptools) 
 library(rgdal)
 library(rgeos)
@@ -93,7 +94,7 @@ myDevKey = "" # DO NOT CHANGE THIS VARIABLE NAME
 
 
 # load utils methods for use
-source("utils.R")
+
 
 
 # calcuate green area index for city of melbourne using meshblock population

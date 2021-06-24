@@ -3,7 +3,7 @@
 # Original file: SDI 2019 Group 6
 # Modified by : Yuke Xie
 ############################################################
-
+library(dtpluginr)
 library(maptools) 
 library(rgdal)
 library(rgeos)
@@ -42,7 +42,7 @@ setwd(LocationOfThisScript())
 myDevKey = "" # DO NOT CHANGE THIS VARIABLE NAME
 
 # load utils methods for use
-source("utils.R")
+
 
 
 #Function Indicator 5 for brisbane Public Transport

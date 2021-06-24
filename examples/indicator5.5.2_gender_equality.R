@@ -8,6 +8,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # loading necessary packages
+library(dtpluginr)
 library(maptools) 
 library(rgdal)
 library(rgeos)
@@ -43,7 +44,7 @@ setwd(LocationOfThisScript())
 
 myDevKey = "" # DO NOT CHANGE THIS VARIABLE NAME
 
-source("utils.R")
+
 
 
 # the follow two lines are test wfs url addresses

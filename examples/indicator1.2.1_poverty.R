@@ -3,7 +3,7 @@
 # Original file: SDI 2019 Group 2
 # Modified by : Yuke Xie
 ############################################################
-
+library(dtpluginr)
 library(maptools)
 library(rgdal)
 library(rgeos)
@@ -50,7 +50,7 @@ myDevKey = "" # DO NOT CHANGE THIS VARIABLE NAME
 
 
 # load utils methods for use
-source("utils.R")
+
 
 execIndicatorPoverty <- function(jobuuid,per_income_wfsurl){
   
