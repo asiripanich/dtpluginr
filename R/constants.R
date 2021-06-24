@@ -1,6 +1,6 @@
 # this variable contains all credentials for accessing a geoserver instance to publish data layers and create styles
 globalGSCredentials = list()
-devkey = ""
+devkey = ifelse(Sys.getenv("DIGITWIN_API_KEY") != "", Sys.getenv("DIGITWIN_API_KEY"), "")
 BaseServiceUrl = "https://digitwin.com.au/services"
 credUrl = paste(BaseServiceUrl,"/plugins/getgscredentials?devkey=", sep = "") 
 jobUpdateUrl = paste(BaseServiceUrl,"/jobs/update", sep = "")
