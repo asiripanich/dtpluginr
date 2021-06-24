@@ -57,20 +57,20 @@ execIndicatorGenderEqual <- function(jobuuid,sp_gender_wfsurl){
   
   # check if myDevKey is set
   if(nchar(myDevKey)==0){
-    utils.debugprint("devKey is not provided.")
+    dt_debugprint("devKey is not provided.")
     return(FALSE)
   }
 
   
-  utils.initGeoServerCredentials(myDevKey)
+  dt_initGeoServerCredentials(myDevKey)
   
-  sp_gender = utils.loadGeoJSON2SP(URLdecode(sp_gender_wfsurl))
+  sp_gender = dt_loadGeoJSON2SP(URLdecode(sp_gender_wfsurl))
   
   
   # check if data layer can be successfully loaded
   if(is.null(sp_gender)){
-    utils.debugprint("fail to load data layer for weekly income")
-    utils.updateJob(list(message="fail to load data layer for weekly income"), FALSE, jobuuid)
+    dt_debugprint("fail to load data layer for weekly income")
+    dt_updateJob(list(message="fail to load data layer for weekly income"), FALSE, jobuuid)
     return(FALSE)
   }
 
@@ -122,7 +122,7 @@ execIndicatorGenderEqual <- function(jobuuid,sp_gender_wfsurl){
   sp_gender@data = sp_gender@data[c("sa2_main16","sa2_name16","genEqual")]
 
   # publish sp object to GeoServer
-  publishedinfo = utils.publishSP2GeoServerWithStyle(sp_gender, 
+  publishedinfo = dt_publishSP2GeoServerWithStyle(sp_gender, 
                                                      layerprefix="genEqu_",
                                                      styleprefix="genEqu_stl_",
                                                      attrname = "genEqual", 
@@ -139,8 +139,8 @@ execIndicatorGenderEqual <- function(jobuuid,sp_gender_wfsurl){
   
   
   if(is.null(publishedinfo) || length(publishedinfo)==0){
-    utils.debugprint("fail to save data to geoserver")
-    utils.updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
+    dt_debugprint("fail to save data to geoserver")
+    dt_updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -180,7 +180,7 @@ execIndicatorGenderEqual <- function(jobuuid,sp_gender_wfsurl){
     yfield="male",
     xaxistitle= "Female",
     yaxistitle= "Male",
-    data=utils.df2jsonlist(df2)
+    data=dt_df2jsonlist(df2)
   )
   
   
@@ -190,7 +190,7 @@ execIndicatorGenderEqual <- function(jobuuid,sp_gender_wfsurl){
   # part 4: put everything in outputs
   outputs = list(geolayers = geolayers, tables = list(tables_element1),charts = charts,message="")
   
-  utils.updateJob(outputs, TRUE, jobuuid) 
+  dt_updateJob(outputs, TRUE, jobuuid) 
   
   return(TRUE)
 }

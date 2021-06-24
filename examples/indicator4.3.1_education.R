@@ -56,24 +56,24 @@ execIndicatorEducation <- function(jobuuid,wfs_url){
   
   # check if myDevKey is set
   if(nchar(myDevKey)==0){
-    utils.debugprint("devKey is not provided.")
+    dt_debugprint("devKey is not provided.")
     return(FALSE)
   }
   
   # ATTENTION: this function MUST be called first before calling any other utils functions
-  utils.initGeoServerCredentials(myDevKey)
+  dt_initGeoServerCredentials(myDevKey)
   
   # Greater Darwin SA2's higher education gender age layer url obtained from Group7 GeoServer on Central GeoNetwork
   # below is the test wfs url
   # wfs_url = "http://45.113.234.50:8080/geoserver/G5_EDUCATION/wfs?request=GetFeature&request=GetFeature&service=WFS&typename=G5_EDUCATION:gdar_sa2_higher_education_gender_age&outputFormat=JSON&version=1.0.0."
   
   
-  edu_gender = utils.loadGeoJSON2SP(URLdecode(wfs_url))
+  edu_gender = dt_loadGeoJSON2SP(URLdecode(wfs_url))
   
   # check if data layer can be successfully loaded
   if(is.null(edu_gender)){
-    utils.debugprint("fail to load data layer for higher education")
-    utils.updateJob(list(message="fail to load data layer for higher education"), FALSE, jobuuid)
+    dt_debugprint("fail to load data layer for higher education")
+    dt_updateJob(list(message="fail to load data layer for higher education"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -83,11 +83,11 @@ execIndicatorEducation <- function(jobuuid,wfs_url){
   
   edu_gender$high_ratio = edu_gender$high_total / edu_gender$ttl_25_64
   
-  edu_gender_final = utils.project2UTM(edu_gender)
+  edu_gender_final = dt_project2UTM(edu_gender)
 
   edu_gender_final@data = edu_gender_final@data[c("sa2_name16","high_total","high_ratio")]    
   
-  publishedinfo = utils.publishSP2GeoServerWithStyle(spobj=edu_gender_final,
+  publishedinfo = dt_publishSP2GeoServerWithStyle(spobj=edu_gender_final,
                                                      layerprefix="education_",   
                                                      styleprefix="education_stl_",
                                                      attrname="high_ratio",
@@ -103,8 +103,8 @@ execIndicatorEducation <- function(jobuuid,wfs_url){
   )
   
   if(is.null(publishedinfo) || length(publishedinfo)==0){
-    utils.debugprint("fail to save data to geoserver")
-    utils.updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
+    dt_debugprint("fail to save data to geoserver")
+    dt_updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -155,7 +155,7 @@ execIndicatorEducation <- function(jobuuid,wfs_url){
     xfield="ratio",
     yfield="count",
     yfieldtitle="Higher Education",
-    data=utils.df2jsonlist(df1)
+    data=dt_df2jsonlist(df1)
   )
   
   #chart 2
@@ -169,7 +169,7 @@ execIndicatorEducation <- function(jobuuid,wfs_url){
     yfield="male",
     xaxistitle= "Female",
     yaxistitle= "Male",
-    data=utils.df2jsonlist(df2)
+    data=dt_df2jsonlist(df2)
   )
   
   
@@ -179,7 +179,7 @@ execIndicatorEducation <- function(jobuuid,wfs_url){
   # part 4: put everything in outputs
   outputs = list(geolayers = geolayers, tables = tables,charts = charts,message="")
   
-  utils.updateJob(outputs, TRUE, jobuuid) 
+  dt_updateJob(outputs, TRUE, jobuuid) 
   
   return(TRUE)
 }

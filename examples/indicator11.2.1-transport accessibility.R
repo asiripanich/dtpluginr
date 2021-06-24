@@ -69,35 +69,35 @@ execIndicatorBuffer <- function(jobuuid,pop_wfsurl,transport_wfsurl){
   
   # check if myDevKey is set
   if(nchar(myDevKey)==0){
-    utils.debugprint("devKey is not provided.")
+    dt_debugprint("devKey is not provided.")
     return(FALSE)
   }
   
-  utils.initGeoServerCredentials(myDevKey)
+  dt_initGeoServerCredentials(myDevKey)
   
   
   # load spatial object direct from geojson
-  sp_transport = utils.loadGeoJSON2SP(URLdecode(transport_wfsurl))
+  sp_transport = dt_loadGeoJSON2SP(URLdecode(transport_wfsurl))
   
   # check if data layer can be successfully loaded
   if(is.null(sp_transport)){
-    utils.debugprint("fail to load data layer for transport")
-    utils.updateJob(list(message="fail to load data layer for transport"), FALSE, jobuuid)
+    dt_debugprint("fail to load data layer for transport")
+    dt_updateJob(list(message="fail to load data layer for transport"), FALSE, jobuuid)
     return(FALSE)
   }
   
-  sp_pop = utils.loadGeoJSON2SP(URLdecode(pop_wfsurl))
+  sp_pop = dt_loadGeoJSON2SP(URLdecode(pop_wfsurl))
   
   # check if data layer can be successfully loaded
   if(is.null(sp_pop)){
-    utils.debugprint("fail to load data layer for population")
-    utils.updateJob(list(message="fail to load data layer for population"), FALSE, jobuuid)
+    dt_debugprint("fail to load data layer for population")
+    dt_updateJob(list(message="fail to load data layer for population"), FALSE, jobuuid)
     return(FALSE)
   }
   
   # project(transform) sp into UTM to enable area calculation
-  sp_transport_prj = utils.project2UTM(sp_transport)
-  sp_pop_prj = utils.project2UTM(sp_pop)
+  sp_transport_prj = dt_project2UTM(sp_transport)
+  sp_pop_prj = dt_project2UTM(sp_pop)
   
   
   # Creat buffers for transport stations
@@ -196,7 +196,7 @@ execIndicatorBuffer <- function(jobuuid,pop_wfsurl,transport_wfsurl){
   # # # # # # # # # # # # #
   # publish 
   # # # # # # # # # # # # #
-  publishedinfo = utils.publishSP2GeoServerWithStyle(spobj=sp_pop_final,
+  publishedinfo = dt_publishSP2GeoServerWithStyle(spobj=sp_pop_final,
                                                            layerprefix="trans_access_",
                                                            styleprefix="trans_access_stl_",
                                                            attrname="bufferPct",
@@ -212,7 +212,7 @@ execIndicatorBuffer <- function(jobuuid,pop_wfsurl,transport_wfsurl){
   )
 
   if(is.null(publishedinfo) || length(publishedinfo)==0){
-    utils.debugprint("fail to save data to geoserver")
+    dt_debugprint("fail to save data to geoserver")
     return(FALSE)
   }
 
@@ -265,13 +265,13 @@ execIndicatorBuffer <- function(jobuuid,pop_wfsurl,transport_wfsurl){
     xfield="ratio",
     yfield= "freq",
     yfieldtitle="access percentage",
-    data=utils.df2jsonlist(df1)
+    data=dt_df2jsonlist(df1)
   )
   
   # part 4: put everything in outputs
   outputs = list(geolayers = geolayers, tables = list(tables_element1),charts=list(charts_element1))
   
-  utils.updateJob(outputs, TRUE, jobuuid) 
+  dt_updateJob(outputs, TRUE, jobuuid) 
 
 
   return(TRUE)

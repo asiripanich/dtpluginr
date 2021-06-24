@@ -51,15 +51,15 @@ execIndicator <- function(jobuuid,pop_wfs){
   
   # check if myDevKey is set
   if(nchar(myDevKey)==0){
-    utils.debugprint("devKey is not provided.")
+    dt_debugprint("devKey is not provided.")
     return(FALSE)
   }
   
   
-  utils.initGeoServerCredentials(myDevKey)
+  dt_initGeoServerCredentials(myDevKey)
   
   
-  sp_pop = utils.loadGeoJSON2SP(URLdecode(pop_wfs))
+  sp_pop = dt_loadGeoJSON2SP(URLdecode(pop_wfs))
   
   #Union polygon by attribute
   sp_pop_union <- unionSpatialPolygons(sp_pop,sp_pop$sa2_5dig16)
@@ -81,7 +81,7 @@ execIndicator <- function(jobuuid,pop_wfs){
   
   
   # publish sp object to GeoServer
-  publishedinfo = utils.publishSP2GeoServerWithStyle(sp_agg, 
+  publishedinfo = dt_publishSP2GeoServerWithStyle(sp_agg, 
                                                      layerprefix="pop_den_",
                                                      styleprefix="pop_den_stl_",
                                                      attrname = "density", 
@@ -98,8 +98,8 @@ execIndicator <- function(jobuuid,pop_wfs){
   
   
   if(is.null(publishedinfo) || length(publishedinfo)==0){
-    utils.debugprint("fail to save data to geoserver")
-    utils.updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
+    dt_debugprint("fail to save data to geoserver")
+    dt_updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -124,7 +124,7 @@ execIndicator <- function(jobuuid,pop_wfs){
   # part 4: put everything in outputs
   outputs = list(geolayers = geolayers, tables = list(tables_element1))
   
-  utils.updateJob(outputs, TRUE, jobuuid) 
+  dt_updateJob(outputs, TRUE, jobuuid) 
   
   return(TRUE)
   

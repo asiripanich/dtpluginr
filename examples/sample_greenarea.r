@@ -29,7 +29,7 @@
 # Rscript E:\01_UniProjects\Digitwin\SourceCodeRepos\dt-plugin-r\sample_greenarea.R "fake-job-uuid" "https://ds2.digitwin.com.au:8443/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=livedata:greenspace_psma2019_sa4_melbourne_inner&outputFormat=json" "https://ds2.digitwin.com.au:8443/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=livedata:population_abs2016_sa1_melbourne_inner&outputFormat=json" 100000
 
 # v2.1 2021-06-24
-# (1) update test data wfs urls and utils.publishSP2GeoServerWithMultiStyles parameters
+# (1) update test data wfs urls and dt_publishSP2GeoServerWithMultiStyles parameters
 
 # v2.0 2019-08-30
 # (1) update script with new utils funtions 
@@ -87,7 +87,7 @@ setwd(LocationOfThisScript())
 # devKey is used for storing and publishing plugin outputs in Digitwin GeoServers so that the outputs can be viewed, used, downloaded by others
 # To obtain a devKey for Digitwin plugin development, please contact UoM Digitwin dev team.
 
-myDevKey = "" # DO NOT CHANGE THIS VARIABLE NAME
+myDevKey = Sys.getenv("DIGITWIN_API_KEY")  # DO NOT CHANGE THIS VARIABLE NAME
 
 # this the main wrapper method which handles the arguments check and call the plugin calculation method
 # to trigger this in cmd line, just run : RScript path\sample_code.R "arg1" "arg2"
@@ -102,39 +102,39 @@ execIndicatorGreenArea <- function(jobuuid, greenarea_wfsurl, pop_wfsurl, pop_ba
   
   # check if myDevKey is set
   if(nchar(myDevKey)==0){
-    utils.debugprint("devKey is not provided.")
+    dt_debugprint("devKey is not provided.")
     return(FALSE)
   }
   
   # ATTENTION: this function MUST be called first before calling any other utils functions
-  utils.initGeoServerCredentials(myDevKey)
+  dt_initGeoServerCredentials()
   
   
-  utils.debugprint(getwd())
+  dt_debugprint(getwd())
   # insert input parameter check logic here. make sure to convert data into right data type since by default the inputs are all treated as strings
-  utils.debugprint(sprintf("para1: %s", jobuuid))
-  utils.debugprint(sprintf("para2: %s", URLdecode(greenarea_wfsurl)))
-  utils.debugprint(sprintf("para3: %s", URLdecode(pop_wfsurl)))
-  utils.debugprint(sprintf("para3: %i", as.integer(pop_basenum))) # convert string to int
+  dt_debugprint(sprintf("para1: %s", jobuuid))
+  dt_debugprint(sprintf("para2: %s", URLdecode(greenarea_wfsurl)))
+  dt_debugprint(sprintf("para3: %s", URLdecode(pop_wfsurl)))
+  dt_debugprint(sprintf("para3: %i", as.integer(pop_basenum))) # convert string to int
   
   # the follow two lines are for testing
   #greenarea_wfsurl = "https://ds2.digitwin.com.au:8443/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=livedata:greenspace_psma2019_sa4_melbourne_inner&outputFormat=json"
   #pop_wfsurl = "https://ds2.digitwin.com.au:8443/geoserver/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=livedata:population_abs2016_sa1_melbourne_inner&outputFormat=json"
   
   # load spatial object direct from geojson
-  sp_greenarea = utils.loadGeoJSON2SP(URLdecode(greenarea_wfsurl))
+  sp_greenarea = dt_loadGeoJSON2SP(URLdecode(greenarea_wfsurl))
   # check if data layer can be successfully loaded
   if(is.null(sp_greenarea)){
-    utils.debugprint("fail to load data layer for greenarea")
-    utils.updateJob(list(message="fail to load data layer for greenarea"), FALSE, jobuuid)
+    dt_debugprint("fail to load data layer for greenarea")
+    dt_updateJob(list(message="fail to load data layer for greenarea"), FALSE, jobuuid)
     return(FALSE)
   }
   
-  sp_pop = utils.loadGeoJSON2SP(URLdecode(pop_wfsurl))
+  sp_pop = dt_loadGeoJSON2SP(URLdecode(pop_wfsurl))
   # check if data layer can be successfully loaded
   if(is.null(sp_pop)){
-    utils.debugprint("fail to load data layer for population")
-    utils.updateJob(list(message="fail to load data layer for population"), FALSE, jobuuid)
+    dt_debugprint("fail to load data layer for population")
+    dt_updateJob(list(message="fail to load data layer for population"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -150,14 +150,14 @@ execIndicatorGreenArea <- function(jobuuid, greenarea_wfsurl, pop_wfsurl, pop_ba
   # # # # # # # # # # # # # 
   
   # project(transform) sp into UTM to enable area calculation
-  sp_greenarea_prj = utils.project2UTM(sp_greenarea)
+  sp_greenarea_prj = dt_project2UTM(sp_greenarea)
   
   # # # # # # # # # # # # # # # # # # # # # # 
   # calculation greenarea for each population polygon 
   # # # # # # # # # # # # # # # # # # # # # # 
   
   # project(transform) sp into UTM to enable area calculation, since the orginal population polygin in WGS84 coordinate reference system
-  sp_pop_prj = utils.project2UTM(sp_pop)
+  sp_pop_prj = dt_project2UTM(sp_pop)
   
   # add two more attributes for sp_pop_prj, one is for the actual size of greenarea, the other is for the greenarea index
   sp_pop_prj@data[,"gaarea"] = 0.0
@@ -233,7 +233,7 @@ execIndicatorGreenArea <- function(jobuuid, greenarea_wfsurl, pop_wfsurl, pop_ba
   
   # for(i in nrow(sp_pop_prj):1){
   # 
-  #   utils.debugprint(sprintf("processing [%i/%i]", i, nrow(sp_pop_prj)))
+  #   dt_debugprint(sprintf("processing [%i/%i]", i, nrow(sp_pop_prj)))
   # 
   #   # get the geometry polgyon of population, skip if it is NULL
   #   if(is.null(sp_pop_prj@polygons[i])){
@@ -282,7 +282,7 @@ execIndicatorGreenArea <- function(jobuuid, greenarea_wfsurl, pop_wfsurl, pop_ba
   
   # this example shows how to publish a geolayer by creating two wms styles on various attributes of the same data layer. 
   # the data layer will be only published one time, with various wms styles generated for selected attributes 
-  geolayers_gaindex = utils.publishSP2GeoServerWithMultiStyles(spobj=sp_pop_prj, 
+  geolayers_gaindex = dt_publishSP2GeoServerWithMultiStyles(spobj=sp_pop_prj, 
                                                            layerprefix="greenarea_",
                                                            styleprefix="greenarea_stl_",
                                                            attrname_vec=c("gaarea","idxval"),
@@ -298,8 +298,8 @@ execIndicatorGreenArea <- function(jobuuid, greenarea_wfsurl, pop_wfsurl, pop_ba
                                                           )
   
   if(is.null(geolayers_gaindex) || length(geolayers_gaindex)==0){
-    utils.debugprint("fail to save data to geoserver")
-    utils.updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
+    dt_debugprint("fail to save data to geoserver")
+    dt_updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -354,7 +354,7 @@ execIndicatorGreenArea <- function(jobuuid, greenarea_wfsurl, pop_wfsurl, pop_ba
     xfield="month",
     yfield=list("data1", "data2", "data3", "data4"),
     yfieldtitle = list("IE", "Firefox", "Chrome", "Safari"),
-    data=utils.df2jsonlist(df1)
+    data=dt_df2jsonlist(df1)
   )
   
   # part 3.2: build the 2nd element
@@ -366,7 +366,7 @@ execIndicatorGreenArea <- function(jobuuid, greenarea_wfsurl, pop_wfsurl, pop_ba
     type="scatterchart",
     xfield="x",
     yfield="y",
-    data=utils.df2jsonlist(df2)
+    data=dt_df2jsonlist(df2)
   )
   # part 3.3: put the 1st and 2nd element into charts
   charts = list(charts_element1, charts_element2)
@@ -375,9 +375,9 @@ execIndicatorGreenArea <- function(jobuuid, greenarea_wfsurl, pop_wfsurl, pop_ba
   outputs = list(geolayers = geolayers, tables = tables, charts = charts, message="")
   
   # print the outputs in json format
-  utils.debugprint(sprintf("outputs: %s", toJSON(outputs, auto_unbox=TRUE)))
+  dt_debugprint(sprintf("outputs: %s", toJSON(outputs, auto_unbox=TRUE)))
   
-  utils.updateJob(outputs, TRUE, jobuuid)
+  dt_updateJob(outputs, TRUE, jobuuid)
   return(TRUE)
 }
 

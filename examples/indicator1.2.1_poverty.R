@@ -56,23 +56,23 @@ execIndicatorPoverty <- function(jobuuid,per_income_wfsurl){
   
   # check if myDevKey is set
   if(nchar(myDevKey)==0){
-    utils.debugprint("devKey is not provided.")
+    dt_debugprint("devKey is not provided.")
     return(FALSE)
   }
   
   # ATTENTION: this function MUST be called first before calling any other utils functions
-  utils.initGeoServerCredentials(myDevKey)
+  dt_initGeoServerCredentials(myDevKey)
 
   #test wfsurl
   #per_income_wfsurl="http://45.113.235.54:8080/geoserver/G8_INCOME/wfs?request=GetFeature&request=GetFeature&service=WFS&typename=G8_INCOME:gsyd_personal_weekly_income&outputFormat=JSON&version=1.0.0."
   
   # load spatial object direct from geojson
-  sp_per_income = utils.loadGeoJSON2SP(URLdecode(per_income_wfsurl))
+  sp_per_income = dt_loadGeoJSON2SP(URLdecode(per_income_wfsurl))
   
   # check if data layer can be successfully loaded
   if(is.null(sp_per_income)){
-    utils.debugprint("fail to load data layer for weekly income")
-    utils.updateJob(list(message="fail to load data layer for weekly income"), FALSE, jobuuid)
+    dt_debugprint("fail to load data layer for weekly income")
+    dt_updateJob(list(message="fail to load data layer for weekly income"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -101,10 +101,10 @@ execIndicatorPoverty <- function(jobuuid,per_income_wfsurl){
   # PUBLISHING
   # this example shows how to publish a geolayer by creating two wms styles on various attributes of the same data layer. 
   # the data layer will be only published one time, with various wms styles generated for selected attributes 
-  geolayers_gaindex = utils.publishSP2GeoServerWithMultiStyles(spobj=sp_per_income, 
+  geolayers_gaindex = dt_publishSP2GeoServerWithMultiStyles(spobj=sp_per_income, 
                                                                layerprefix="poverty_",
                                                                styleprefix="poverty_stl_",
-                                                               geomtype = utils.getGeomType(sp_per_income), 
+                                                               geomtype = dt_getGeomType(sp_per_income), 
                                                                attrname_vec=c("cnt_400","prc_400"),
                                                                layerdisplyname_vec=c("poverty_count_below_400","poverty_percent_below_400"),
                                                                palettename_vec=c("Greens","Reds"), 
@@ -116,11 +116,11 @@ execIndicatorPoverty <- function(jobuuid,per_income_wfsurl){
                                                                bordervisible_vec=c(TRUE, TRUE),
                                                                styletype_vec=c("graduated", "graduated")
   )
-  # geolayers_gaindex = utils.publishSP2GeoServer(sp_per_income)
+  # geolayers_gaindex = dt_publishSP2GeoServer(sp_per_income)
   #----------------------------------------------------------------------------
   if(is.null(geolayers_gaindex) || length(geolayers_gaindex)==0){
-    utils.debugprint("fail to save data to geoserver")
-    utils.updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
+    dt_debugprint("fail to save data to geoserver")
+    dt_updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -177,7 +177,7 @@ execIndicatorPoverty <- function(jobuuid,per_income_wfsurl){
     xfield="ratio",
     yfield="count",
     yfieldtitle="weekly income below 400",
-    data=utils.df2jsonlist(df1)
+    data=dt_df2jsonlist(df1)
   )
 
   
@@ -185,9 +185,9 @@ execIndicatorPoverty <- function(jobuuid,per_income_wfsurl){
   outputs = list(geolayers = geolayers, tables = list(tables_element1),charts = list(charts_element1),message="")
   
   # print the outputs in json format
-  #utils.debugprint(sprintf("outputs: %s", toJSON(outputs, auto_unbox=TRUE)))
+  #dt_debugprint(sprintf("outputs: %s", toJSON(outputs, auto_unbox=TRUE)))
   
-  utils.updateJob(outputs, TRUE, jobuuid) 
+  dt_updateJob(outputs, TRUE, jobuuid) 
   
   return(TRUE)
 }

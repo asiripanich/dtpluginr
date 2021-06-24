@@ -9,8 +9,6 @@ library(rgdal)
 library(rgeos)
 library(jsonlite)
 
-
-
 #### DO NOT CHNAGE/DELETE THIS FUNCTION
 LocationOfThisScript = function() # Function LocationOfThisScript returns the location of this .R script (may be needed to source other files in same dir)
 {
@@ -39,7 +37,7 @@ LocationOfThisScript = function() # Function LocationOfThisScript returns the lo
 setwd(LocationOfThisScript())
 
 
-myDevKey = "" # DO NOT CHANGE THIS VARIABLE NAME
+myDevKey = Sys.getenv("DIGITWIN_API_KEY") # DO NOT CHANGE THIS VARIABLE NAME
 
 # load utils methods for use
 
@@ -51,28 +49,28 @@ execIndicator <-function(jobuuid,travelmodebri_wfsurl){
   
   # check if myDevKey is set
   if(nchar(myDevKey)==0){
-    utils.debugprint("devKey is not provided.")
+    dt_debugprint("devKey is not provided.")
     return(FALSE)
   }
   
-  utils.initGeoServerCredentials(myDevKey)
+  dt_initGeoServerCredentials(myDevKey)
   
   #the following line is for testing
   #travelmodebri_wfsurl = "http://45.113.235.73:8080/geoserver/G6_TRANSPORT/wfs?request=GetFeature&request=GetFeature&service=WFS&typename=G6_TRANSPORT:gbri_travel_to_work&outputFormat=JSON&version=1.0.0."
   
   
   # load spatial object direct from geojson
-  sp_publictransport_bri = utils.loadGeoJSON2SP(URLdecode(travelmodebri_wfsurl))
+  sp_publictransport_bri = dt_loadGeoJSON2SP(URLdecode(travelmodebri_wfsurl))
   
   # check if data layer can be successfully loaded
   if(is.null(sp_publictransport_bri)){
-    utils.debugprint("fail to load data layer for travel mode")
-    utils.updateJob(list(message="fail to load data layer for travel mode"), FALSE, jobuuid)
+    dt_debugprint("fail to load data layer for travel mode")
+    dt_updateJob(list(message="fail to load data layer for travel mode"), FALSE, jobuuid)
     return(FALSE)
   }
   
   
-  sp_publictransport_bri_prj = utils.project2UTM(sp_publictransport_bri)
+  sp_publictransport_bri_prj = dt_project2UTM(sp_publictransport_bri)
   
   
   #Calculate Indicators
@@ -83,7 +81,7 @@ execIndicator <-function(jobuuid,travelmodebri_wfsurl){
   sp_publictransport_bri_prj@data = sp_publictransport_bri_prj@data[c("sa2_name16","prc_pub","prc_bike","prc_walk")]
   
   #publish to GeoServer
-  publishedinfo = utils.publishSP2GeoServerWithMultiStyles(
+  publishedinfo = dt_publishSP2GeoServerWithMultiStyles(
     spobj=sp_publictransport_bri_prj,
     layerprefix="travelwork_",
     styleprefix="travelwork_stl",
@@ -102,8 +100,8 @@ execIndicator <-function(jobuuid,travelmodebri_wfsurl){
 
   #----------------------------------------------------------------------------
   if(is.null(publishedinfo) || length(publishedinfo)==0){
-    utils.debugprint("fail to save data to geoserver")
-    utils.updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
+    dt_debugprint("fail to save data to geoserver")
+    dt_updateJob(list(message="fail to save data to geoserver"), FALSE, jobuuid)
     return(FALSE)
   }
   
@@ -171,13 +169,13 @@ execIndicator <-function(jobuuid,travelmodebri_wfsurl){
     xfield="ratio",
     yfield=list("public","bike","walk"),
     yfieldtitle=list("public transport","bicycle","walk"),
-    data=utils.df2jsonlist(df1)
+    data=dt_df2jsonlist(df1)
   )
   
   # part 4: put everything in outputs
   outputs = list(geolayers = geolayers, tables = list(tables_element1),charts=list(charts_element1))
   
-  utils.updateJob(outputs, TRUE, jobuuid) 
+  dt_updateJob(outputs, TRUE, jobuuid) 
   
   return(TRUE)
   
