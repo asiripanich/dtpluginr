@@ -4,6 +4,8 @@
 # dtpluginr
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/asiripanich/dtpluginr/workflows/R-CMD-check/badge.svg)](https://github.com/asiripanich/dtpluginr/actions)
 <!-- badges: end -->
 
 The goal of dtpluginr is to provide utility functions for creating a

@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # dtpluginr
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/asiripanich/dtpluginr/workflows/R-CMD-check/badge.svg)](https://github.com/asiripanich/dtpluginr/actions)
 <!-- badges: end -->
 
 The goal of dtpluginr is to provide utility functions for creating a DigiTwin's R plugin. This is a fork of https://bitbucket.org/digitwin/dt-plugin-r/src/master/.
