@@ -1,0 +1,25 @@
+Package: dtpluginr
+Title: A Fork of DigiTwin's R Plugin
+Version: 3.3.0
+Authors@R: 
+    person(given = "First",
+           family = "Last",
+           role = c("aut", "cre"),
+           email = "first.last@example.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: What the package does (one paragraph).
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    base64enc,
+    digest,
+    httr,
+    jsonlite,
+    maptools,
+    rgdal,
+    rgeos,
+    uuid,
+    XML

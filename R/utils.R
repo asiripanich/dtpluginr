@@ -17,97 +17,6 @@
 # Written by: Dr. Yiqun Chen    yiqun.c@unimelb.edu.au
 # DevLogs:
 
-# v3.3 2020-06-24
-# (1) replace "text/xml" with "application/xml" in the geoserver rest api calls so it can work with GS v2.17.1
-# (2) add additional datalayer name check in utils.addDefaultStyleToDataLayer
-# (3) r v4.0.0 tested
-#
-# v3.2 2020-05-19
-# (1) update WMSStyleCreateUrl
-# (2) replace iscategorical with styletype in the WMS styling creation functions
-# (3) remove geomtype parameter in the WMS styling creation functions and publishSP2GeoServerWithName function
-#
-# v3.1 2019-09-11
-# (1) check and trim column name length in utils.publishSP2GeoServerWithMultiStyles and utils.publishSP2GeoServerWithStyle method to fix styling creation failure bug when long attribute name exist in spobj
-# (2) support publish raster tiff layers utils.publishTiffDataLayer, delete tiff layer utils.deleteTiffDataLayer and delete tiff store utils.deleteTiffDataStore, 
-#     a for each devkey account, one raster tiff store named as "globalGSCredentials$gsDATASTORESNAME_tiff" will be created (if not exist) and reused to store all tiff layers
-# (3) support set default style to a layer (raster/vector) utils.addDefaultStyleToDataLayer
-#
-# v3.0 2019-08-30
-# (1) replace RCurl with httr to enable ssl request, httr is way better than RCurl
-# (2) add layerprefix, styleprefix to make created resource more identifialbe 
-#
-# v3.0 2019-07-18
-# (1) replace RCurl with httr to enable ssl request, httr is way better than RCurl
-# (2) add layerprefix, styleprefix to make created resource more identifialbe 
-#
-# v2.9 2019-07-17
-# (1) support border visualisation config for polygon style
-# (2) support categorical attribute styling
-# (3) switch to new styling endpoint
-#
-# v2.8 2018-07-15
-# (1) update loadGeoJSON2SP and loadGeoJSON2SPWithAuth methods so it can work with Mac/Linux and windows
-#
-# v2.7 2017-08-19
-# (1) add utils.loadGeoJSON2SPWithAuth and utils.loadGeoJSON2DFWithAuth methods to access wfs protected auth info
-#
-# v2.6 2017-08-15
-# (1) add utils.project2WGS84 method
-#
-# v2.4 2017-07-19
-# (1) a new function "utils.loadGeoJSON2DF" for handling null geometry geojson urls
-# (2) "utils.createWorkspace" and "utils.getWorkspace" functions are created to manipulate workspaces
-# (3) a temporay fix for the glitch when calling "utils.createFeatureType" function. In some scenarios, the rest api raises a 500 error while the datalayer can still be published successfully in geoserver. just skip setting procflag = FALSE to make it bit more robust and tolerable. .
-#
-# v2.3 2017-06-22
-# (1) a new function "utils.publishSP2GeoServerWithMultiStyles" to publish one geolayer with multiple styles. This function is particularly useful when developers need to render various attribute of a single output geolayer.
-# (2) a new function "utils.project2UTM" to automatically reproject(transform) a sp object into a proper UTM crs.
-#
-# v2.2 2017-06-16
-# (1) a new function "utils.publishSP2GeoServerWithStyle" is created to combine geolayer publish and styling in one place.
-# (2) add missing titles in the charts of outputs
-#
-# v2.1 2017-06-09 
-# (1) fix bug (null is returned when warning occurs in "utils.loadGeoJSON2SP" method). A valid sp object will be returned and warning messages will print out.
-# (2) add timeout (36000 seconds) for "utils.addShp2DataStore" and "utils.loadGeoJSON2SP" methods
-#
-# v1.3 2017-05-29 
-# (1) add getLayerNameFromWFSUrl and getBbox functions to prepare output values 
-#
-# v1.2 2017-05-19 
-# (1) add df2jsonlist function to convert dataframe to json list(useful in output wrapping)
-#
-# v1.1 2017-04-19 
-# (1) add wms style creation methods
-# (2) add utm zone code calculation methods
-#
-# v1.0 2017-04-06
-# (1) add Geoserver interaction methods
-# (2) add GeoJSON->sp parsing methods
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-library(maptools) 
-library(rgdal)
-library(rgeos)
-library(uuid)
-library(jsonlite)
-library(base64enc)
-library(digest)
-library(XML)
-library(httr)
-# this variable contains all credentials for accessing a geoserver instance to publish data layers and create styles
-globalGSCredentials = list()
-
-devkey = ""
-BaseServiceUrl = "https://digitwin.com.au/services"
-credUrl = paste(BaseServiceUrl,"/plugins/getgscredentials?devkey=", sep = "") 
-jobUpdateUrl = paste(BaseServiceUrl,"/jobs/update", sep = "")
-WMSStyleCreateUrl = paste(BaseServiceUrl,"/styling/sld/create", sep = "")#DON'T MODIFY THIS LINE
-
-proj4string_epsg4326 = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs" #DON'T MODIFY THIS LINE
-proj4string_utm_template = "+proj=utm +zone=%i %s+ellps=WGS84 +datum=WGS84 +units=m +no_defs" #DON'T MODIFY THIS LINE
-
 
 #' debug print
 #'
@@ -115,7 +24,6 @@ proj4string_utm_template = "+proj=utm +zone=%i %s+ellps=WGS84 +datum=WGS84 +unit
 #'
 #' @return debug print string started with "==="
 #' @export
-#'
 #' @examples
 #' utils.debugprint("all done")
 utils.debugprint <- function(arg1){
@@ -131,8 +39,6 @@ utils.debugprint <- function(arg1){
 #'
 #' @return A sp object
 #' @export
-#'
-#' @examples
 utils.loadGeoJSON2SP <- function(url){
     
   # create a unique temp file name for geojson
@@ -180,8 +86,6 @@ utils.loadGeoJSON2SP <- function(url){
 #'
 #' @return A sp object
 #' @export
-#'
-#' @examples
 utils.loadGeoJSON2SPWithAuth <- function(url, username, password){
   
   # create a unique temp file name for geojson
@@ -229,8 +133,6 @@ utils.loadGeoJSON2SPWithAuth <- function(url, username, password){
 #'
 #' @return A data.frame object
 #' @export
-#'
-#' @examples
 utils.loadGeoJSON2DF <- function(url){
   
   dfobj <- tryCatch(
@@ -266,8 +168,6 @@ utils.loadGeoJSON2DF <- function(url){
 #' 
 #' @return A data.frame object
 #' @export
-#'
-#' @examples
 utils.loadGeoJSON2DFWithAuth <- function(url, username, password){
   
   dfobj <- tryCatch(
@@ -301,8 +201,6 @@ utils.loadGeoJSON2DFWithAuth <- function(url, username, password){
 #' @param layerprefix a prefix for layer name, will make the generated data layers in GeoServer more identifiable 
 #' @return A wfs url string of successfully published data layer
 #' @export
-#'
-#' @examples
 utils.publishSP2GeoServer <- function(spobj, layerprefix="my_"){
   
   procflag = TRUE
@@ -379,8 +277,6 @@ utils.publishSP2GeoServer <- function(spobj, layerprefix="my_"){
 #
 #' @return a list contains single element to be included in geolayers
 #' @export
-#'
-#' @examples
 utils.publishSP2GeoServerWithStyle <- function(spobj, 
                                                layerprefix="my_",
                                                styleprefix="my_stl_",
@@ -502,8 +398,6 @@ utils.publishSP2GeoServerWithStyle <- function(spobj,
 #
 #' @return a list elements to be included in geolayers
 #' @export
-#'
-#' @examples
 utils.publishSP2GeoServerWithMultiStyles <- function(spobj, 
                                                     layerprefix="my_",
                                                     styleprefix="my_stl_",
@@ -696,8 +590,6 @@ utils.publishSP2GeoServerWithMultiStyles <- function(spobj,
 #
 #' @return a list contains single element to be included in geolayers
 #' @export
-#'
-#' @examples
 utils.publishSP2GeoServerWithName <- function(spobj, 
                                                layerprefix="my_stl_",
                                                layerdisplyname=""
@@ -737,8 +629,6 @@ utils.publishSP2GeoServerWithName <- function(spobj,
 #'
 #' @return empty string if success or error message
 #' @export
-#'
-#' @examples
 utils.createFeatureType <- function(filename){
  
   ftContentRaw = utils.getFeatureType()
@@ -787,12 +677,8 @@ utils.createFeatureType <- function(filename){
 
 #' get all featuretypes defined in the given datastore of the given workspace in geoserver (workspace and datastore are defined the globalGSCredentials)
 #'
-#' @param  
-#'
 #' @return xml string if success or empty string
 #' @export
-#'
-#' @examples
 utils.getFeatureType <- function(){
   
   url <- sprintf('%s/rest/workspaces/%s/datastores/%s/featuretypes.xml'
@@ -815,8 +701,6 @@ utils.getFeatureType <- function(){
 #'
 #' @return empty string if success or error message
 #' @export
-#'
-#' @examples
 utils.createWorkspace <- function(wsname){
   
   wsContentRaw = utils.getWorkspace()
@@ -855,12 +739,8 @@ utils.createWorkspace <- function(wsname){
 
 #' get all workspaces
 #'
-#' @param
-#'
 #' @return empty string if success or error message
 #' @export
-#'
-#' @examples
 utils.getWorkspace <- function(){
   
   url <- sprintf('%s/rest/workspaces' ,globalGSCredentials$gsRESTURL)
@@ -879,8 +759,6 @@ utils.getWorkspace <- function(){
 #'
 #' @return empty string if success or error message
 #' @export
-#'
-#' @examples
 utils.addShp2DataStore <- function(filepath){
   
   #create workspace if it doesn't exist
@@ -929,8 +807,6 @@ utils.addShp2DataStore <- function(filepath){
 #' 
 #' @return
 #' @export
-#'
-#' @examples
 utils.createWMSStyle <- function(wfsurl, styleprefix="my_stl_", attrname, palettename="Reds", colorreverseorder=FALSE, colornum=5, classifier="Jenks", bordercolor="black", borderwidth=1, bordervisible=TRUE, styletype="single"){
   
   wfsurl = sprintf("%s%s%s", wfsurl, "&propertyName=", attrname)
@@ -966,8 +842,6 @@ utils.createWMSStyle <- function(wfsurl, styleprefix="my_stl_", attrname, palett
 #'
 #' @return UTM zone code
 #' @export
-#'
-#' @examples
 utils.long2UTM <- function(long){
 
  (floor((long + 180)/6) %% 60) + 1
@@ -981,8 +855,6 @@ utils.long2UTM <- function(long){
 #'
 #' @return list
 #' @export
-#'
-#' @examples
 utils.df2jsonlist <- function(df){
   
   result = list()
@@ -1008,8 +880,6 @@ utils.df2jsonlist <- function(df){
 #'
 #' @return 
 #' @export
-#'
-#' @examples
 utils.getLayerNameFromWFSUrl <-function(wfsurl){
   
   result = ""
@@ -1034,8 +904,6 @@ utils.getLayerNameFromWFSUrl <-function(wfsurl){
 #'
 #' @return list(minX, minY, maxX, maxY)
 #' @export
-#'
-#' @examples
 utils.getBbox <-function (spobj){
   return(list(spobj@bbox[1,1],spobj@bbox[2,1],spobj@bbox[1,2],spobj@bbox[2,2]))
   }
@@ -1047,8 +915,6 @@ utils.getBbox <-function (spobj){
 #'
 #' @return a reprojected sp object
 #' @export
-#'
-#' @examples
 utils.project2UTM <-function (spobj){
   
   # get bbox of sp
@@ -1080,8 +946,6 @@ utils.project2UTM <-function (spobj){
 #'
 #' @return a reprojected sp object
 #' @export
-#'
-#' @examples
 utils.project2WGS84 <-function (spobj){
   
   return(spTransform(spobj,CRS(proj4string_epsg4326)))
@@ -1094,8 +958,6 @@ utils.project2WGS84 <-function (spobj){
 #'
 #' @return geomtype, one of Polygon, LineString, Point
 #' @export
-#'
-#' @examples
 utils.getGeomType <-function (spobj){
   
   spobjClass = tolower(class(spobj)[1])
@@ -1115,8 +977,6 @@ utils.getGeomType <-function (spobj){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 utils.initGeoServerCredentials <- function(dk){
   
   # assign dk to devkey
@@ -1167,8 +1027,6 @@ utils.initGeoServerCredentials <- function(dk){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 utils.updateJob <- function(joboutputs, jobsuccess, jobuuid){
   
   if(tolower(trimws(jobuuid)=="fake-job-uuid")){
@@ -1202,8 +1060,6 @@ utils.updateJob <- function(joboutputs, jobsuccess, jobuuid){
 #'
 #' @return if success, a published datalayername; otherwise, empty string
 #' @export
-#'
-#' @examples
 utils.publishTiffDataLayer <- function(filepath, datalayername=UUIDgenerate(FALSE)){
   
   file = file(filepath, "rb")
@@ -1237,8 +1093,6 @@ utils.publishTiffDataLayer <- function(filepath, datalayername=UUIDgenerate(FALS
 #' @param isglobalstyle if TRUE, workspace information will not be attached. set this to TRUE if the style is hard coded in Geoserver. This is useful for creating common styles (such as shadow intensity, rainfall and temperature) at the application/built-in model level, rather than individual job level
 #' @return if success, a published datalayername; otherwise, empty string
 #' @export
-#'
-#' @examples
 utils.addDefaultStyleToDataLayer <- function(stylename, datalayername, isglobalstyle=FALSE){
   
   # ref https://boundlessgeo.com/2012/10/adding-layers-to-geoserver-using-the-rest-api/
@@ -1277,13 +1131,9 @@ utils.addDefaultStyleToDataLayer <- function(stylename, datalayername, isglobals
 
 
 #' delete a coverage store (related to current mydevkey) and all layers it contains on geoserver (a bit dangerous)
-#' 
-#' @param  
 #'
 #' @return if success tiff store name; otherwise empty string
 #' @export
-#'
-#' @examples
 utils.deleteTiffDataStore <- function(){
   
   url <- sprintf('%s/rest/workspaces/%s/coveragestores/%s_tiff?recurse=true'
@@ -1304,13 +1154,9 @@ utils.deleteTiffDataStore <- function(){
 }
 
 #' delete a coverage layer based on layername
-#' 
-#' @param  
 #'
 #' @return if success, return the deleted datalayername; otherwise, empty string
 #' @export
-#'
-#' @examples
 utils.deleteTiffDataLayer <- function(datalayername){
   
   
